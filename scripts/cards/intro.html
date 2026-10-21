@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PISA</title>
+  <!-- The opening card of the recorded video: what it is about to show.
+       record.mjs opens it first and adds the class "go" once it is
+       recording. -->
+  <link rel="stylesheet" href="../../static/fonts/fonts.css">
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: #05080f;
+      color: #ffffff;
+      font-family: 'Schibsted Grotesk', -apple-system, 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .brand { display: flex; align-items: center; gap: 16px; margin-bottom: 26px; }
+    .brand img { width: 64px; height: 64px; display: block; }
+    .brand span { font-size: 44px; font-weight: 800; letter-spacing: -.03em; }
+    .title { font-size: 52px; font-weight: 800; letter-spacing: -.03em; margin: 0 0 40px; }
+    .lines { list-style: none; margin: 0; padding: 0; }
+    .lines li { font-size: 32px; font-weight: 500; color: #c9d1db; margin: 0 0 16px; }
+    .alice { color: #7f9bff; font-weight: 700; }
+    .bob { color: #33c7a2; font-weight: 700; }
+    .brand, .title, .lines li { opacity: 0; transform: translateY(12px); }
+    .go .brand, .go .title, .go .lines li { animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards; }
+    .go .title { animation-delay: .25s; }
+    .go .lines li:nth-child(1) { animation-delay: 1.1s; }
+    .go .lines li:nth-child(2) { animation-delay: 2.1s; }
+    .go .lines li:nth-child(3) { animation-delay: 3.1s; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+  <div class="brand"><img src="../../static/pisa-logo.png" alt=""><span>PISA</span></div>
+  <p class="title">Payjoin with signature aggregation</p>
+  <ul class="lines">
+    <li><span class="alice">Alice</span> sends 50,000 sats to <span class="bob">Bob</span></li>
+    <li><span class="bob">Bob</span> adds an input of his own: a payjoin</li>
+    <li>Both inputs share one aggregate signature</li>
+  </ul>
+</body>
+</html>

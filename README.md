@@ -81,7 +81,7 @@ explorer's block times and ETAs read like a real chain's.
 
 ## The video
 
-`docs/pisa-demo.mp4` is one take, 109 seconds at 1920×1080, recorded on this
+`docs/pisa-demo.mp4` is one take, 117 seconds at 1920×1080, recorded on this
 laptop with:
 
 ```sh
@@ -115,8 +115,9 @@ each button before it is pressed. It is made to be watched on a phone:
   explorer, go over each piece in turn: the savings, the input without a
   signature, the one that carries it, the same two in the inputs list, the
   payjoin calculations with what Bob received, and the totals.
-- It ends on a closing card, `scripts/endcard/endcard.html`: thanks, the
-  Cypher Tank logo, and pisa.payjoin.org, for five seconds.
+- It opens on a card that says in three lines what is about to happen,
+  `scripts/cards/intro.html`, and ends on one with thanks, the Cypher Tank
+  logo, and pisa.payjoin.org, `scripts/cards/endcard.html`.
 
 The wallets link to the explorer with the payjoin ownership fragment,
 `/tx/<txid>?showDetails=true#pj=1:rs:rs:Alice:Bob`: one code per input and
@@ -129,7 +130,7 @@ The wallet server builds it from who owns what (`pj_fragment` in
 A browser window at 1280×720 shows everything large enough for a phone
 screen; at full screen on a larger display the lane grows with the phones.
 
-1. **Bob requests.** *Request payment*, keep 50,000 sats, *Create request*.
+1. **Bob requests.** *Receive*, keep 50,000 sats, *Create request*.
    His phone shows the QR code and waits on the directory.
 2. **Alice scans.** *Send*, *Scan*. The review screen shows the amount and
    *Attempting payjoin*.

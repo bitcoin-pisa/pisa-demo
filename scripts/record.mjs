@@ -419,8 +419,19 @@ const seen = (kind) => `window.__seen.has(${JSON.stringify(kind)})`;
 await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 85, maxWidth: W * DPR, maxHeight: H * DPR, everyNthFrame: 1 });
 
 await fetch(`${WALLETS}/api/reset`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' });
-await goto(WALLETS, `${$('#bob [data-act="to-amount"]')} && document.fonts.status === 'loaded'`);
-await sleep(2800);
+
+// The opening card: what the video is about to show, one line at a time.
+const card = (name) => `file://${path.join(DEMO, 'scripts', 'cards', name)}`;
+const coverNow = `(() => { const f = document.getElementById('rec-fade'); f.classList.add('now', 'on'); f.offsetHeight; f.classList.remove('now'); })()`;
+await goto(card('intro.html'), `document.fonts.status === 'loaded' && document.querySelector('.brand img').complete`, `document.getElementById('rec-cursor').style.opacity = 0`);
+await evaluate(`document.body.classList.add('go')`);
+await sleep(3800 + 3600);
+await fadeOut();
+
+// Up from dark on the two wallets.
+await goto(WALLETS, `${$('#bob [data-act="to-amount"]')} && document.fonts.status === 'loaded'`, coverNow);
+await fadeIn();
+await sleep(2400);
 
 // Bob asks for 50,000 sats.
 await frame(await phoneTop('bob'), { pad: 20 });
@@ -451,7 +462,7 @@ await click('#alice [data-act="send"]');
 await parkCursor(W * 0.5, H * 1.2);
 await frame(await box($('[data-who="alice"] .phone'), $('#lane')), { pad: 12, d: 1.3 });
 await waitFor(seen('alice.nonce'), 90000);
-await say('Alice signs a fallback payment first', 'Bob could broadcast it alone if the payjoin fails');
+await say('Alice signs a fallback transaction first', 'Bob could broadcast it alone if the payjoin fails');
 await waitFor(seen('alice.original_sent'), 90000);
 await say('Her PSBT goes to Bob with a signing nonce', 'Encrypted, through the payjoin directory');
 await waitFor(seen('bob.original_received'), 90000);
@@ -568,7 +579,7 @@ await sleep(800);
 // seconds before the video ends.
 await fadeOut();
 await goto(
-  `file://${path.join(DEMO, 'scripts', 'endcard', 'endcard.html')}`,
+  card('endcard.html'),
   `document.fonts.status === 'loaded' && document.querySelector('.logo').complete`,
   `document.getElementById('rec-cursor').style.opacity = 0`,
 );

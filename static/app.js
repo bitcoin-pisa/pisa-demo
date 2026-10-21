@@ -28,9 +28,9 @@ let moving = true;
 // wallet would. The protocol itself is in the lane between the phones.
 function aliceStatus(steps) {
   if (steps['alice.aggregated']) return 'Sending';
-  if (steps['alice.proposal']) return 'Finishing payment';
+  if (steps['alice.proposal']) return 'Finishing transaction';
   if (steps['alice.original_sent']) return 'Waiting for Bob';
-  return 'Preparing payment';
+  return 'Preparing transaction';
 }
 
 function bobStatus(steps) {
@@ -268,7 +268,7 @@ function bobView(st) {
       </div>`;
     }
     default:
-      return homeView('bob', 'Bob', '<button class="btn primary" data-act="to-amount" type="button">Request payment</button>');
+      return homeView('bob', 'Bob', '<button class="btn primary" data-act="to-amount" type="button">Receive</button>');
   }
 }
 
