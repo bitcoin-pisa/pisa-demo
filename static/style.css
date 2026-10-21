@@ -275,6 +275,23 @@ button { cursor: pointer; }
 .request-note { color: var(--muted); font-size: 14px; }
 .request-note .data { color: var(--ink-2); }
 
+.status-line {
+  display: flex; align-items: center; gap: 14px;
+  margin-top: 8px; padding: 16px 0;
+  border-top: 1px solid #e6eaef;
+  font-size: 20px; font-weight: 600; color: var(--ink-2);
+}
+.spinner {
+  flex: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 3px solid #e1e6ec;
+  animation: spin .9s linear infinite;
+}
+[data-who="alice"] .spinner { border-top-color: var(--alice); }
+[data-who="bob"] .spinner { border-top-color: var(--bob); }
+@keyframes spin { to { transform: rotate(360deg); } }
+.compact .request-row + .status-line { margin-top: 18px; }
+
 .listening { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--ink-2); font-size: 18px; margin-top: 18px; }
 .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--bob); animation: pulse 1.4s infinite; }
 @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(14, 159, 126, .5); } 100% { box-shadow: 0 0 0 12px rgba(14, 159, 126, 0); } }

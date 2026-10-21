@@ -81,7 +81,7 @@ explorer's block times and ETAs read like a real chain's.
 
 ## The video
 
-`docs/pisa-demo.mp4` is one take, 99 seconds at 1920×1080, recorded on this
+`docs/pisa-demo.mp4` is one take, 109 seconds at 1920×1080, recorded on this
 laptop with:
 
 ```sh
@@ -101,7 +101,10 @@ each button before it is pressed. It is made to be watched on a phone:
   ffmpeg's `zoompan`: Bob's phone, then Alice's, the transaction while the
   PSBT travels, and close on the card when the two partial signatures
   become one. Close ups are crops of the larger frames, so they stay sharp.
-  The wallet part has no captions.
+  Short captions at the foot of the frame, or its top where the foot holds
+  what they describe, say what happens at each step; the steps they
+  describe linger long enough to read them. The phones show one status
+  line each, the way a wallet would, and leave the protocol to the lane.
 - Every change is eased: camera moves, the scrolling, the spotlight and
   its caption, which glide from one piece to the next, and the move to the
   explorer, where the camera

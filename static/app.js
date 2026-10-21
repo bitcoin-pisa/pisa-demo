@@ -24,23 +24,18 @@ let lastSeq = 0;
 // their final state at once, without any of the motion.
 let moving = true;
 
-const ALICE_STEPS = [
-  ['alice.fallback', 'Sign fallback'],
-  ['alice.nonce', 'Reserve nonce'],
-  ['alice.original_sent', 'Send to Bob'],
-  ['alice.proposal', "Bob's proposal"],
-  ['alice.aggregated', 'Aggregate'],
-  ['alice.broadcast', 'Broadcast'],
-];
-const BOB_STEPS = [
-  ['bob.original_received', "Alice's PSBT"],
-  ['bob.checks', 'Check'],
-  ['bob.contributed', 'Add a coin'],
-  ['bob.partial_signed', 'Sign my part'],
-  ['bob.proposal_sent', 'Send back'],
-  ['bob.paid', 'Received'],
-];
-const SIGNING = new Set(['alice.nonce', 'alice.aggregated', 'bob.contributed', 'bob.partial_signed']);
+// What a wallet shows while a payjoin is under way: one line, the way a real
+// wallet would. The protocol itself is in the lane between the phones.
+function aliceStatus(steps) {
+  if (steps['alice.aggregated']) return 'Sending';
+  if (steps['alice.proposal']) return 'Finishing payment';
+  if (steps['alice.original_sent']) return 'Waiting for Bob';
+  return 'Preparing payment';
+}
+
+function bobStatus(steps) {
+  return steps['bob.proposal_sent'] ? 'Waiting for Alice' : 'Payjoin in progress';
+}
 
 // How long the end of a payment lingers, in ms. Finalizing, broadcasting
 // and landing in the mempool follow each other within a second on regtest;
@@ -48,6 +43,9 @@ const SIGNING = new Set(['alice.nonce', 'alice.aggregated', 'bob.contributed', '
 const LINGER = {
   ownPartial: 1300,    // Alice's partial signature, before the two merge
   merge: 1400,         // the two partial signatures flying into one
+  nonce: 2600,         // Alice's fallback signature and nonce, before she sends
+  contributed: 2600,   // Bob's coin in the transaction
+  partialSigned: 2600, // Bob's partial signature
   aggregated: 4200,    // the finished transaction, before it is broadcast
   broadcast: 1800,     // the flight to the network
   inMempool: 1600,     // in the mempool, before Alice's phone says sent
@@ -170,18 +168,8 @@ function homeView(who, name, action) {
   </div>`;
 }
 
-function stepsList(defs, steps, running) {
-  let activeShown = false;
-  return `<ol class="steps">${defs.map(([kind, label], i) => {
-    const s = steps[kind];
-    let cls = '';
-    let mark = i + 1;
-    if (s?.failed) { cls = 'failed'; mark = '!'; }
-    else if (s) { cls = 'done'; mark = CHECK; }
-    else if (running && !activeShown) { cls = 'active'; mark = ''; activeShown = true; }
-    if (SIGNING.has(kind) && s && !s.failed) cls += ' signing';
-    return `<li class="${cls}"><span class="mark">${mark}</span><span class="step-label">${label}</span></li>`;
-  }).join('')}</ol>`;
+function statusLine(text) {
+  return `<div class="status-line"><span class="spinner"></span><span>${text}</span></div>`;
 }
 
 function aliceView(st) {
@@ -212,13 +200,11 @@ function aliceView(st) {
       </div>`;
     }
     case 'progress': {
-      const running = !Object.values(st.steps).some((s) => s.failed);
       const error = st.error ? `<div class="error-box">${esc(st.error)}</div>` : '';
       return `<div class="view">
         <div class="head"><h2>Paying Bob</h2>${st.error ? '<button class="link" data-act="home" type="button">Close</button>' : ''}</div>
         <p class="pay-amount">${sats(st.amount)}</p>
-        ${stepsList(ALICE_STEPS, st.steps, running)}
-        ${error}
+        ${st.error ? error : statusLine(aliceStatus(st.steps))}
       </div>`;
     }
     case 'done': {
@@ -256,7 +242,6 @@ function bobView(st) {
     case 'request': {
       const inv = st.invoice;
       if (!inv) return '<div class="view"></div>';
-      const running = !Object.values(st.steps).some((s) => s.failed);
       const waiting = st.negotiating ? '' : '<div class="listening"><span class="pulse"></span>Pending transaction</div>';
       return `<div class="view ${st.negotiating ? 'compact' : ''}">
         <div class="head"><h2>${st.negotiating ? 'Receiving' : 'Request'}</h2>${st.negotiating && !st.error ? '' : '<button class="link" data-act="home" type="button">Close</button>'}</div>
@@ -267,7 +252,7 @@ function bobView(st) {
           </div>
         </div>
         ${waiting}
-        ${st.negotiating ? `<div style="height:18px"></div>${stepsList(BOB_STEPS, st.steps, running)}` : ''}
+        ${st.negotiating && !st.error ? statusLine(bobStatus(st.steps)) : ''}
         ${st.error ? `<div class="error-box">${esc(st.error)}</div>` : ''}
       </div>`;
     }
@@ -557,6 +542,16 @@ async function mergeSignatures(targetIndex) {
 
 const queue = [];
 let playing = false;
+// Every step this page has shown since it loaded. scripts/record.mjs waits on
+// it to put its captions next to what they describe.
+window.__seen = new Set();
+
+/** Show the current state, mark the step as shown, and hold it a while. */
+async function linger(kind, ms) {
+  renderPhone('alice'); renderPhone('bob'); renderLane();
+  window.__seen.add(kind);
+  await sleep(ms);
+}
 
 function enqueue(event) {
   if (event.seq <= lastSeq) return;
@@ -580,6 +575,7 @@ async function play() {
     renderPhone('alice');
     renderPhone('bob');
     renderLane();
+    if (live) window.__seen.add(event.kind);
     if (live) await sleep(250);
   }
   moving = true;
@@ -621,6 +617,7 @@ async function apply(e, live) {
     case 'alice.nonce':
       step('alice', e.kind, e);
       ui.tx.psbt = d.psbt;
+      if (live) await linger(e.kind, LINGER.nonce);
       break;
     case 'alice.original_sent':
       step('alice', e.kind, e);
@@ -649,11 +646,13 @@ async function apply(e, live) {
       if (ui.tx) { ui.tx.psbt = d.psbt; ui.tx.status = 'Bob adds a coin'; }
       const mine = d.psbt?.inputs?.find((i) => i.owner === 'bob');
       B.coin = mine?.value_sat ?? null;
+      if (live) await linger(e.kind, LINGER.contributed);
       break;
     }
     case 'bob.partial_signed':
       step('bob', e.kind, e);
       if (ui.tx) { ui.tx.psbt = d.psbt; ui.tx.status = 'Bob signs'; }
+      if (live) await linger(e.kind, LINGER.partialSigned);
       break;
     case 'bob.proposal_sent':
       step('bob', e.kind, e);
@@ -683,10 +682,7 @@ async function apply(e, live) {
       step('alice', e.kind, e);
       A.summary = d;
       if (ui.tx) { ui.tx.summary = d; ui.tx.status = '1 signature'; }
-      if (live) {
-        renderPhone('alice'); renderLane();
-        await sleep(LINGER.aggregated);
-      }
+      if (live) await linger(e.kind, LINGER.aggregated);
       break;
     }
     case 'alice.broadcast':
@@ -697,10 +693,7 @@ async function apply(e, live) {
       if (live) await fly($('[data-who="alice"] .phone'), $('#network'), 'Transaction', 'alice', { gold: false, duration: LINGER.broadcast });
       if (ui.tx) ui.tx.status = 'In mempool';
       $('#network').classList.add('lit');
-      if (live) {
-        renderLane();
-        await sleep(LINGER.inMempool);
-      }
+      if (live) await linger('in_mempool', LINGER.inMempool);
       A.screen = 'done';
       break;
 
@@ -722,15 +715,11 @@ async function apply(e, live) {
     }
 
     case 'alice.error': {
-      const next = ALICE_STEPS.find(([k]) => !A.steps[k]);
-      if (next) A.steps[next[0]] = { failed: true, detail: 'Stopped here' };
       A.error = e.detail;
       if (A.screen !== 'progress') A.screen = 'progress';
       break;
     }
     case 'bob.error': {
-      const next = BOB_STEPS.find(([k]) => !B.steps[k]);
-      if (next && B.negotiating) B.steps[next[0]] = { failed: true, detail: 'Stopped here' };
       B.error = e.detail;
       break;
     }

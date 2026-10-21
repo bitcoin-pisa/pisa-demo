@@ -170,6 +170,8 @@ const camera = [{ t: -Infinity, z: 1, cx: W / 2, cy: H / 2, d: 0 }];
 /** What the camera shows, in CSS pixels; captions stay inside it. */
 let view = { left: 0, top: 0, right: W, bottom: H };
 
+let zoom = 1;
+
 function look(cx, cy, z, d) {
   z = Math.min(Math.max(z, 1), 2.6);
   // Never look past the page's edge.
@@ -178,6 +180,7 @@ function look(cx, cy, z, d) {
   cx = Math.min(Math.max(cx, hw), W - hw);
   cy = Math.min(Math.max(cy, hh), H - hh);
   camera.push({ t: takeTime(), z, cx, cy, d });
+  zoom = z;
   view = { left: cx - hw, top: cy - hh, right: cx + hw, bottom: cy + hh };
   return evaluate(`document.documentElement.style.setProperty('--rec-zoom', ${z})`).catch(() => {});
 }
@@ -245,6 +248,13 @@ const STAGEHANDS = `(() => {
       font: 600 26px/1.25 'Helvetica Neue', -apple-system, sans-serif; letter-spacing: -.01em; opacity: 0; transform: translateY(10px);
       transition: opacity .35s, transform .35s, left .6s cubic-bezier(.45,.05,.25,1), top .6s cubic-bezier(.45,.05,.25,1); }
     #rec-caption.on { opacity: 1; transform: none; }
+    #rec-say { position: fixed; left: 0; top: 0; z-index: 2147483642; pointer-events: none; transform-origin: 0 0; }
+    #rec-say .card { max-width: 820px; padding: 14px 22px 14px 20px; border-radius: 12px; text-align: left;
+      background: #ffffff; color: #14171f; border-left: 7px solid #e9a800; box-shadow: 0 22px 44px -14px rgba(0, 0, 0, .45), 0 0 0 1px rgba(20, 23, 31, .08);
+      font: 600 28px/1.25 'Helvetica Neue', -apple-system, sans-serif; letter-spacing: -.01em;
+      opacity: 0; transform: translateY(10px); transition: opacity .35s, transform .35s; }
+    #rec-say.on .card { opacity: 1; transform: none; }
+    #rec-say small { display: block; margin-top: 4px; font-weight: 400; font-size: 21px; color: #3a404d; }
     #rec-fade { position: fixed; inset: 0; z-index: 2147483645; pointer-events: none; background: #05080f; opacity: 0; transition: opacity .6s ease; }
     #rec-fade.on { opacity: 1; }
     #rec-fade.now { transition: none; }
@@ -269,6 +279,26 @@ const STAGEHANDS = `(() => {
   const fade = document.createElement('div');
   fade.id = 'rec-fade';
   document.body.appendChild(fade);
+  const say = document.createElement('div');
+  say.id = 'rec-say';
+  say.innerHTML = '<div class="card"></div>';
+  document.body.appendChild(say);
+  // A caption at the foot of what the camera shows, scaled down by its zoom
+  // so it comes out the same size in the video however close the camera is.
+  window.__say = (text, note, view, zoom, where) => {
+    const card = say.firstChild;
+    const fresh = !say.classList.contains('on');
+    card.innerHTML = text + (note ? '<small>' + note + '</small>' : '');
+    const s = 1 / zoom;
+    const w = card.offsetWidth * s;
+    const h = card.offsetHeight * s;
+    const left = (view.left + view.right) / 2 - w / 2;
+    const top = where === 'top' ? view.top + 30 * s : view.bottom - h - 30 * s;
+    Object.assign(say.style, { left: left + 'px', top: top + 'px', transform: 'scale(' + s + ')' });
+    if (fresh) { say.offsetHeight; }
+    say.classList.add('on');
+  };
+  window.__hush = () => say.classList.remove('on');
   // Ring a part of the page, dim the rest, and say what it shows. The
   // caption goes below the ring, or above it, inside the camera's view.
   window.__spot = (r, text, note, view) => {
@@ -336,6 +366,16 @@ async function spot(rect, text, note = '') {
   await evaluate(`window.__spot(${JSON.stringify(rect)}, ${JSON.stringify(text)}, ${JSON.stringify(note)}, ${JSON.stringify(view)})`);
 }
 
+/** A caption at the foot of the frame, or its top, for the wallet part. */
+async function say(text, note = '', where = 'bottom') {
+  await evaluate(`window.__say(${JSON.stringify(text)}, ${JSON.stringify(note)}, ${JSON.stringify(view)}, ${zoom}, ${JSON.stringify(where)})`);
+}
+
+async function hush() {
+  await evaluate('window.__hush()');
+  await sleep(400);
+}
+
 async function fadeOut() {
   await evaluate(`document.getElementById('rec-fade').classList.add('on')`);
   await sleep(700);
@@ -370,7 +410,8 @@ async function scrollTo(expression, offset, smooth = true) {
 }
 
 const heading = (name) => `[...document.querySelectorAll('h2')].find((h) => h.textContent.trim() === ${JSON.stringify(name)})`;
-const doneSteps = (who) => `document.querySelectorAll('#${who} .steps li.done').length`;
+// Whether the page has shown a step yet, see window.__seen in static/app.js.
+const seen = (kind) => `window.__seen.has(${JSON.stringify(kind)})`;
 
 // ---------------------------------------------------------------------------
 // The take
@@ -388,7 +429,10 @@ await click('#bob [data-act="to-amount"]');
 await sleep(1300);
 await click('#bob [data-act="request"]');
 await waitFor(`${$('#bob .qr-card svg')}`);
-await sleep(2300);
+await sleep(600);
+await say('Bob asks for 50,000 sats', 'His wallet opens a mailbox on a payjoin directory');
+await sleep(3600);
+await hush();
 
 // Alice scans his code and reviews the payment.
 await frame(await phoneTop('alice'), { pad: 20 });
@@ -397,28 +441,51 @@ await click('#alice [data-act="to-scan"]');
 await sleep(1100);
 await click('#alice [data-act="scan"]');
 await waitFor(`${$('#alice [data-act="send"]')}`);
-await sleep(2200);
+await sleep(500);
+await say('Alice scans the request', 'It tells her wallet that Bob can do a payjoin');
+await sleep(3200);
+await hush();
 
 // Alice pays. The camera follows the PSBT: Alice, then Bob, then back.
 await click('#alice [data-act="send"]');
 await parkCursor(W * 0.5, H * 1.2);
 await frame(await box($('[data-who="alice"] .phone'), $('#lane')), { pad: 12, d: 1.3 });
-await waitFor(`${doneSteps('bob')} >= 1`, 90000);
+await waitFor(seen('alice.nonce'), 90000);
+await say('Alice signs a fallback payment first', 'Bob could broadcast it alone if the payjoin fails');
+await waitFor(seen('alice.original_sent'), 90000);
+await say('Her PSBT goes to Bob with a signing nonce', 'Encrypted, through the payjoin directory');
+await waitFor(seen('bob.original_received'), 90000);
+await hush();
 await frame(await box($('#lane'), $('[data-who="bob"] .phone')), { pad: 12, d: 1.3 });
-await waitFor(`${doneSteps('bob')} >= 5`, 90000);
-await sleep(700);
+await waitFor(seen('bob.contributed'), 90000);
+await say('Bob adds a coin of his own', 'Now the inputs come from both wallets');
+await waitFor(seen('bob.partial_signed'), 90000);
+await say('Bob signs his part', 'A partial signature, not valid on its own');
+await waitFor(seen('bob.proposal_sent'), 90000);
+await hush();
+await sleep(300);
 await frame(await box($('[data-who="alice"] .phone'), $('#lane')), { pad: 12, d: 1.3 });
-await waitFor(`${doneSteps('alice')} >= 4`, 90000);
+await waitFor(seen('alice.proposal'), 90000);
 // Up close for the one moment that is new: two partial signatures, one signature.
 await frame(await box($('#tx .card')), { pad: 22, maxZoom: 2.1, d: 1.0 });
+await sleep(1100);
+await say('Alice completes the signature', 'Her partial signature and Bob\'s become one', 'top');
 await waitFor(`${$('#tx .stats')}`, 90000);
-// Time to read the result, then back out to see it go to the network: the
-// page holds the finished transaction long enough for this move.
-await sleep(2400);
+const statTexts = (selector) => evaluate(`[...document.querySelectorAll('#tx .stats ${selector}')].map((e) => e.textContent.trim())`);
+const [, size] = await statTexts('.stat-n');
+const [, without] = await statTexts('.stat-l');
+await say('One signature for both inputs', `${size} instead of ${without.replace('not ', '')} vB with a signature each`, 'top');
+await sleep(2200);
+await hush();
+// Back out to see it go to the network: the page holds the finished
+// transaction long enough for this move.
 await wide(1.6);
 await waitFor(`${$('#network.lit')}`, 60000);
+await sleep(300);
+await say('Broadcast, and in the mempool', 'Nodes check the one signature against both inputs\' keys', 'top');
 await waitFor(`${$('#alice .done-view')} && ${$('#bob .done-view')}`, 60000);
-await sleep(2800);
+await sleep(2400);
+await hush();
 
 // A block.
 await click('#mine');
