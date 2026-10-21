@@ -497,6 +497,17 @@ await sleep(4600);
 await unspot();
 await sleep(800);
 
+// The closing card: a dip to dark, the card rises in, and it stays for five
+// seconds before the video ends.
+await fadeOut();
+await goto(
+  `file://${path.join(DEMO, 'scripts', 'endcard', 'endcard.html')}`,
+  `document.fonts.status === 'loaded' && document.querySelector('.logo').complete`,
+  `document.getElementById('rec-cursor').style.opacity = 0`,
+);
+await evaluate(`document.body.classList.add('go')`);
+await sleep(1300 + 5000);
+
 // An idle page sends no frames, so the last one is held until here.
 const takeEnd = Date.now() / 1000 - skipped;
 await cdp.send('Page.stopScreencast');

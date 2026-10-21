@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Thank you</title>
+  <!-- The closing card of the recorded video. record.mjs opens it after the
+       explorer and adds the class "go" once it is recording. -->
+  <link rel="stylesheet" href="../../static/fonts/fonts.css">
+  <style>
+    html, body { margin: 0; height: 100%; }
+    body {
+      background: #05080f;
+      color: #ffffff;
+      font-family: 'Schibsted Grotesk', -apple-system, 'Helvetica Neue', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .thanks { font-size: 76px; font-weight: 800; letter-spacing: -.03em; margin: 0; }
+    .logo { display: block; height: 180px; width: auto; margin: 34px 0 44px; }
+    .more { font-size: 26px; font-weight: 500; color: #9aa4b2; margin: 0 0 8px; }
+    .link { font-size: 42px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+    .thanks, .logo, .more, .link { opacity: 0; transform: translateY(12px); }
+    .go .thanks, .go .logo, .go .more, .go .link { animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards; }
+    .go .logo { animation-delay: .2s; }
+    .go .more { animation-delay: .4s; }
+    .go .link { animation-delay: .5s; }
+    @keyframes rise { to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body>
+  <p class="thanks">Thank you</p>
+  <img class="logo" src="cyphertank-logo.svg" alt="Cypher Tank">
+  <p class="more">See more</p>
+  <p class="link">pisa.payjoin.org</p>
+</body>
+</html>
