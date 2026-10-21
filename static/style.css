@@ -484,6 +484,9 @@ button { cursor: pointer; }
 .intro { text-align: center; color: var(--ink-2); padding: 0 24px; }
 .intro h1 { font-size: 50px; line-height: 1.1; letter-spacing: -.035em; margin: 0 0 14px; color: var(--ink); font-weight: 800; text-wrap: balance; }
 .intro p { margin: 0 auto 10px; max-width: 34em; font-size: 23px; text-wrap: pretty; }
+.intro-brand { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.intro-brand img { width: 84px; height: 84px; display: block; }
+.intro-brand span { font-size: 64px; font-weight: 800; letter-spacing: -.035em; color: var(--ink); }
 .intro .who-alice { color: var(--alice); font-weight: 700; }
 .intro .who-bob { color: var(--bob); font-weight: 700; }
 

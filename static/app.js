@@ -338,9 +338,10 @@ function useInvoice(invoice) {
 // The lane: the transaction under construction
 
 function laneIntro() {
+  // The same mark the video opens on, so the cut from the opening card to
+  // the wallets reads as one piece.
   return `<div class="intro">
-    <h1><span class="who-alice">Alice</span> pays <span class="who-bob">Bob</span></h1>
-    <p>with a PISA Enabled Transaction</p>
+    <div class="intro-brand"><img src="pisa-logo.png" alt=""><span>PISA</span></div>
   </div>`;
 }
 

@@ -81,7 +81,7 @@ explorer's block times and ETAs read like a real chain's.
 
 ## The video
 
-`docs/pisa-demo.mp4` is one take, 117 seconds at 1920×1080, recorded on this
+`docs/pisa-demo.mp4` is one take, 118 seconds at 1920×1080, recorded on this
 laptop with:
 
 ```sh
@@ -115,7 +115,7 @@ each button before it is pressed. It is made to be watched on a phone:
   explorer, go over each piece in turn: the savings, the input without a
   signature, the one that carries it, the same two in the inputs list, the
   payjoin calculations with what Bob received, and the totals.
-- It opens on a card that says in three lines what is about to happen,
+- It opens on a card that says in four lines what is about to happen,
   `scripts/cards/intro.html`, and ends on one with thanks, the Cypher Tank
   logo, and pisa.payjoin.org, `scripts/cards/endcard.html`.
 

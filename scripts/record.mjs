@@ -425,7 +425,9 @@ const card = (name) => `file://${path.join(DEMO, 'scripts', 'cards', name)}`;
 const coverNow = `(() => { const f = document.getElementById('rec-fade'); f.classList.add('now', 'on'); f.offsetHeight; f.classList.remove('now'); })()`;
 await goto(card('intro.html'), `document.fonts.status === 'loaded' && document.querySelector('.brand img').complete`, `document.getElementById('rec-cursor').style.opacity = 0`);
 await evaluate(`document.body.classList.add('go')`);
-await sleep(3800 + 3600);
+// The last of the four lines is in after about five seconds; then time to
+// read them all.
+await sleep(4800 + 3400);
 await fadeOut();
 
 // Up from dark on the two wallets.
