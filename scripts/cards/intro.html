@@ -27,7 +27,6 @@
     .lines li { font-size: 32px; font-weight: 500; color: #c9d1db; margin: 0 0 16px; }
     .alice { color: #7f9bff; font-weight: 700; }
     .bob { color: #33c7a2; font-weight: 700; }
-    .lines li.gain { color: #8be36a; font-weight: 700; }
     .brand, .title, .lines li { opacity: 0; transform: translateY(12px); }
     .go .brand, .go .title, .go .lines li { animation: rise .7s cubic-bezier(.2,.7,.2,1) forwards; }
     .go .title { animation-delay: .25s; }
@@ -45,7 +44,7 @@
     <li><span class="alice">Alice</span> sends 50,000 sats to <span class="bob">Bob</span></li>
     <li><span class="bob">Bob</span> adds an input of his own: a payjoin</li>
     <li>Both inputs share one aggregate signature</li>
-    <li class="gain">Which saves block space and fees</li>
+    <li>This saves block space and fees</li>
   </ul>
 </body>
 </html>
