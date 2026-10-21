@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PISA wallets</title>
+  <link rel="preload" href="fonts/SchibstedGrotesk-var.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts/fonts.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <img class="logo" src="pisa-logo.png" alt="" width="34" height="34">
+      <span class="wordmark">PISA</span>
+    </div>
+    <div class="controls">
+      <span class="height" id="height">Regtest</span>
+      <button class="btn line" id="mine" type="button">Mine a block</button>
+      <a class="btn line" id="explorer" target="_blank" rel="noopener">Explorer</a>
+      <button class="btn quiet" id="reset" type="button" title="Clear both wallets' screens for another take">Reset</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <section class="party" data-who="alice" aria-label="Alice's wallet">
+      <div class="phone"><div class="screen" id="alice"></div></div>
+    </section>
+
+    <section class="lane" id="lane" aria-label="What travels between the wallets">
+      <div class="node directory" id="directory">
+        <div class="node-name">Payjoin directory</div>
+      </div>
+
+      <div class="tx" id="tx"></div>
+
+      <div class="node network" id="network">
+        <div class="node-name">Bitcoin network</div>
+      </div>
+    </section>
+
+    <section class="party" data-who="bob" aria-label="Bob's wallet">
+      <div class="phone"><div class="screen" id="bob"></div></div>
+    </section>
+  </main>
+
+  <div class="wires" id="wires" aria-hidden="true"></div>
+  <div class="flyers" id="flyers" aria-hidden="true"></div>
+  <div class="toast" id="toast" role="status"></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

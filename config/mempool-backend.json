@@ -1,0 +1,37 @@
+{
+  "MEMPOOL": {
+    "NETWORK": "regtest",
+    "BACKEND": "none",
+    "HTTP_PORT": 8999,
+    "API_URL_PREFIX": "/api/v1/",
+    "POLL_RATE_MS": 1000,
+    "CACHE_ENABLED": false,
+    "INITIAL_BLOCKS_AMOUNT": 8,
+    "MEMPOOL_BLOCKS_AMOUNT": 8,
+    "BLOCKS_SUMMARIES_INDEXING": false,
+    "AUTOMATIC_POOLS_UPDATE": false,
+    "AUDIT": false,
+    "RUST_GBT": true,
+    "STDOUT_LOG_MIN_PRIORITY": "info",
+    "ALLOW_UNREACHABLE": true
+  },
+  "CORE_RPC": {
+    "HOST": "127.0.0.1",
+    "PORT": 18443,
+    "USERNAME": "pisa",
+    "PASSWORD": "pisa",
+    "TIMEOUT": 60000
+  },
+  "ESPLORA": {
+    "REST_API_URL": "http://127.0.0.1:1"
+  },
+  "DATABASE": { "ENABLED": false },
+  "SYSLOG": { "ENABLED": false },
+  "STATISTICS": { "ENABLED": false },
+  "MAXMIND": { "ENABLED": false },
+  "LIGHTNING": { "ENABLED": false },
+  "REDIS": { "ENABLED": false },
+  "REPLICATION": { "ENABLED": false },
+  "STRATUM": { "ENABLED": false },
+  "FIAT_PRICE": { "ENABLED": false }
+}

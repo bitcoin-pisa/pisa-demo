@@ -1,0 +1,33 @@
+[package]
+name = "pisa-demo"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+publish = false
+description = "A two-wallet web UI for a PISA payment: async payjoin with BIP 460 full aggregation, on regtest"
+
+[dependencies]
+pisa = { git = "https://github.com/bitcoin-pisa/pisa", rev = "0f1c318ef0bf2b1f6ee740b6b7105958864bc171" }
+anyhow = "1"
+axum = "0.8"
+corepc-client = { version = "0.12", features = ["client-sync"] }
+bitcoin = { version = "0.32", features = ["base64", "rand-std", "serde"] }
+futures = "0.3"
+payjoin = { version = "1.0.0", default-features = false, features = ["v2", "io"] }
+payjoin-test-utils = "0.0.1"
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+tower-http = { version = "0.6", features = ["fs", "set-header"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# The same payjoin crates pisa builds against: its submodule's commit of the
+# bitcoin-pisa fork, which carries the CISA PSBT fields.
+[patch.crates-io]
+payjoin = { git = "https://github.com/bitcoin-pisa/rust-payjoin", rev = "da6e9a4c6ec2549380d1fd8452bd0838da9ab5af" }
+payjoin-mailroom = { git = "https://github.com/bitcoin-pisa/rust-payjoin", rev = "da6e9a4c6ec2549380d1fd8452bd0838da9ab5af" }
+payjoin-test-utils = { git = "https://github.com/bitcoin-pisa/rust-payjoin", rev = "da6e9a4c6ec2549380d1fd8452bd0838da9ab5af" }

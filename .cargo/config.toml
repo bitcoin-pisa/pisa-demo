@@ -1,0 +1,4 @@
+# payjoin-test-utils pulls in corepc-node, whose build script would download a
+# release bitcoind. The demo runs its own BIP 460 build instead.
+[env]
+BITCOIND_SKIP_DOWNLOAD = "1"
